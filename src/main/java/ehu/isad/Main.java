@@ -1,33 +1,37 @@
 package ehu.isad;
 
-import ehu.isad.controllers.Controller;
+import ehu.isad.controllers.MenuController;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 public class Main extends Application {
 
+  private Parent checksumUI;
+
+  private Stage stage;
+
+  private MenuController menuController;
+
   @Override
-  public void start(Stage primaryStage) throws Exception{
+  public void start(Stage primaryStage) throws Exception {
+    stage = primaryStage;
+    pantailakKargatu();
 
-    FXMLLoader loader = new FXMLLoader(getClass().getResource("/sample.fxml"));
-    Parent root = (Parent) loader.load();
-
-    Controller controller = loader.getController();
-    //controller.setMainApp(this);
-
-    primaryStage.setTitle("Hello World");
-    primaryStage.setScene(new Scene(root, 300, 275));
-    primaryStage.show();
+    stage.setTitle("AZTERKETA 2020/2021");
+    stage.setScene(new Scene(checksumUI));
+    stage.show();
   }
 
+  private void pantailakKargatu() throws IOException {
 
-
-  public static void main(String[] args) {
-    launch(args);
+    FXMLLoader loaderKirolari = new FXMLLoader(getClass().getResource("/menu.fxml"));
+    checksumUI = (Parent) loaderKirolari.load();
+    menuController = loaderKirolari.getController();
+    menuController.setMainApp(this);
   }
 }
