@@ -1,18 +1,9 @@
 package ehu.isad.controllers;
 
-import java.net.URL;
-import java.sql.PreparedStatement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
-
 import ehu.isad.Main;
 import ehu.isad.db.ChecksumKud;
-import ehu.isad.db.DBKudeatzaile;
 import ehu.isad.utils.Checksum;
 import ehu.isad.utils.Lag;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -21,10 +12,22 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.text.Text;
+import org.apache.commons.codec.binary.Hex;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.ResourceBundle;
 
 public class MenuController {
     private Main main;
     private List<Checksum> lagList;
+
+
 
     @FXML
     private ResourceBundle resources;
@@ -59,13 +62,16 @@ public class MenuController {
 
 
     @FXML
-    void checkEgin(ActionEvent event) {
+    void checkEgin(ActionEvent event) throws IOException, NoSuchAlgorithmException {
+        versionId.setEditable(true);
         String aux = textId.getText();
-        System.out.println(aux);
-        String lag = aux + "/README";
-        String md5 = this.MD5(lag);
+        String md5 = this.md5(aux);
+        List<Lag>  laglist2 = ChecksumKud.getInstance().lortuLagak(aux, md5);
         if (ChecksumKud.getInstance().badago(md5)){
+            Lag lag1 = laglist2.get(0);
+            taulaId.getItems().add(lag1);
             textu1Id.setVisible(true);
+
 
         }
         else{
@@ -88,22 +94,36 @@ public class MenuController {
         versionId.setCellValueFactory(new PropertyValueFactory<>("version"));
 
 
+
+
     }
 
 
 
-    public String MD5(String md5) {
-        try {
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
-            byte[] array = md.digest(md5.getBytes());
-            StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < array.length; ++i) {
-                sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
-            }
-            return sb.toString();
-        } catch (java.security.NoSuchAlgorithmException e) {
+    public  String md5(String aux) throws NoSuchAlgorithmException, FileNotFoundException, IOException {
+
+        URL url = new URL(aux + "/README");
+        InputStream is = url.openStream();
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        String digest = getDigest(is, md, 2048);
+
+        System.out.println("MD5 Digest:" + digest);
+        return digest;
+
+    }
+
+    public  String getDigest(InputStream is, MessageDigest md, int byteArraySize)
+            throws NoSuchAlgorithmException, IOException {
+
+        md.reset();
+        byte[] bytes = new byte[byteArraySize];
+        int numBytes;
+        while ((numBytes = is.read(bytes)) != -1) {
+            md.update(bytes, 0, numBytes);
         }
-        return null;
+        byte[] digest = md.digest();
+        String result = new String(Hex.encodeHex(digest));
+        return result;
     }
 
     public void setMainApp(Main main) {

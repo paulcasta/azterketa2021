@@ -2,6 +2,7 @@ package ehu.isad.db;
 
 
 import ehu.isad.utils.Checksum;
+import ehu.isad.utils.Lag;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -54,5 +55,24 @@ public class ChecksumKud {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public List<Lag> lortuLagak(String url, String md5){
+
+        String query = "select version from checksums where md5= '" +md5+"'";
+        DBKudeatzaile dbKudeatzaile = DBKudeatzaile.getInstantzia().getInstantzia().getInstantzia();
+        ResultSet rs = dbKudeatzaile.execSQL(query);
+
+        List<Lag> emaitza = new ArrayList<>();
+        try {
+            while (rs.next()) {
+                String version = rs.getString("version");
+                emaitza.add(new Lag(url, md5, version));
+            }
+        } catch(SQLException throwables){
+            throwables.printStackTrace();
+        }
+        return emaitza;
+
     }
 }
